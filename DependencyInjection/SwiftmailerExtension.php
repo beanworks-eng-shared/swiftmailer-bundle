@@ -80,7 +80,13 @@ class SwiftmailerExtension extends Extension
         ;
 
         $usedEnvs = null;
-        $disableDelivery = isset($mailer['disable_delivery']) && $mailer['disable_delivery'];
+        $disableDelivery = isset($mailer['disable_delivery']) && filter_var($mailer['disable_delivery'], FILTER_VALIDATE_BOOL);
+        // Resolve disable_delivery as env. variable
+        if (method_exists($container, 'resolveEnvPlaceholders') &&
+            isset($mailer['disable_delivery'])
+            && str_starts_with($mailer['disable_delivery'], 'env_')) {
+            $disableDelivery = filter_var($container->resolveEnvPlaceholders($mailer['disable_delivery'], true), FILTER_VALIDATE_BOOL);
+        }
 
         if (method_exists($container, 'resolveEnvPlaceholders')) {
             $options = [];

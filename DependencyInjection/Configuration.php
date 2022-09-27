@@ -176,7 +176,7 @@ class Configuration implements ConfigurationInterface
                     ->prototype('scalar')
                     ->end()
                 ->end()
-                ->booleanNode('disable_delivery')->end()
+                ->scalarNode('disable_delivery')->end()
             ->end()
         ;
 
