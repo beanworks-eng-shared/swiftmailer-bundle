@@ -14,6 +14,7 @@ namespace Symfony\Bundle\SwiftmailerBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
  * This class contains the configuration information for the bundle.
@@ -26,12 +27,14 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 class Configuration implements ConfigurationInterface
 {
     private $debug;
+    private $container;
 
     /**
      * @param bool $debug The kernel.debug value
      */
-    public function __construct($debug)
+    public function __construct(ContainerBuilder $container, $debug)
     {
+        $this->container = $container;
         $this->debug = (bool) $debug;
     }
 
@@ -142,6 +145,15 @@ class Configuration implements ConfigurationInterface
                     ->beforeNormalization()
                         ->ifArray()
                         ->then(function ($v) {
+                            // Fix allowing using environement variable to reset the array structure
+                            // If delivery_addresses contains an empty string then we can nullify it
+                            // It will get removed thanks to the array_filter call
+                            foreach ($v as &$val) {
+                                if (str_starts_with($val, 'env_') && '' === trim($this->container->resolveEnvPlaceholders($val, true))) {
+                                    $val = null;
+                                }
+                            }
+                            unset($val);
                             return array_filter(array_values($v));
                         })
                     ->end()

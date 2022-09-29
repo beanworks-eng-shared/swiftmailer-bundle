@@ -398,7 +398,7 @@ class SwiftmailerExtension extends Extension
 
     public function getConfiguration(array $config, ContainerBuilder $container)
     {
-        return new Configuration($container->getParameter('kernel.debug'));
+        return new Configuration($container, $container->getParameter('kernel.debug'));
     }
 
     private function createChildDefinition($id)
